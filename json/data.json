@@ -1,0 +1,70 @@
+{
+  "iots": [
+    {
+      "humidity": 10,
+      "temperature": 10.1010101,
+      "timestamp": "2023-11-09 06:46:12",
+      "id": 1
+    },
+    {
+      "humidity": 15,
+      "temperature": 25,
+      "timestamp": "2023-11-09 06:57:38",
+      "id": 2
+    },
+    {
+      "humidity": 15,
+      "temperature": 25,
+      "timestamp": "2023-11-09 06:58:31",
+      "id": 3
+    },
+    {
+      "humidity": 15,
+      "temperature": 25,
+      "timestamp": "2023-11-09 06:58:46",
+      "id": 4
+    },
+    {
+      "humidity": 15,
+      "temperature": 25,
+      "timestamp": "2023-11-09 06:59:01",
+      "id": 5
+    },
+    {
+      "humidity": 15,
+      "temperature": 25,
+      "timestamp": "2023-11-09 06:59:16",
+      "id": 6
+    },
+    {
+      "humidity": 64,
+      "temperature": 23,
+      "timestamp": "2023-11-09 06:59:31",
+      "id": 7
+    },
+    {
+      "humidity": 8,
+      "temperature": 27,
+      "timestamp": "2023-11-09 06:59:46",
+      "id": 8
+    },
+    {
+      "humidity": 75,
+      "temperature": 1,
+      "timestamp": "2023-11-09 07:00:01",
+      "id": 9
+    },
+    {
+      "humidity": 75,
+      "temperature": 1,
+      "timestamp": "2023-11-09 07:00:17",
+      "id": 10
+    },
+    {
+      "humidity": 70,
+      "temperature": 11,
+      "timestamp": "2023-11-09 07:00:32",
+      "id": 11
+    }
+  ]
+}
