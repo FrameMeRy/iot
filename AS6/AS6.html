@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.2.2/mqtt.min.js"
+        integrity="sha512-I8gBERqrEkyDqbjHj3aymzBVIPFs85vGSzy26+1P5weHzFp8vfJ8dARJz51n3oQ80DTdYn8MbhUiz5UAW2rMxw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <title>LED Control</title>
+</head>
+<style>
+    #ledButton {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+<script>
+    const client = mqtt.connect("mqtt://172.20.10.3:9001");
+    let isLedOn = false;
+
+    // When successfully connected
+    client.on("connect", () => {
+        client.subscribe("led", (err) => {
+            if (!err) {
+                client.publish("led", isLedOn ? "on" : "off");
+            }
+        });
+    });
+
+    // When receiving a message from the MQTT Broker
+    client.on("message", (topic, message) => {
+        console.log(message.toString());
+    });
+
+    // Function to toggle the LED status
+    function toggleLED() {
+        isLedOn = !isLedOn;
+        client.publish("led", isLedOn ? "on" : "off");
+
+        var button = document.getElementById('ledButton');
+        button.innerText =  (isLedOn ? 'ON': 'OFF') ;
+
+        // Log the LED status in the console
+        console.log("LED is", isLedOn ? "ON" : "OFF");
+    }
+</script>
+<body>
+    <center>
+    <h1>LED</h1>
+    <button type="button" id="ledButton" onclick="toggleLED()">OFF</button>
+    </center>
+   
+</body>
+
+</html>
