@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.2.2/mqtt.min.js"
+        integrity="sha512-I8gBERqrEkyDqbjHj3aymzBVIPFs85vGSzy26+1P5weHzFp8vfJ8dARJz51n3oQ80DTdYn8MbhUiz5UAW2rMxw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Weather Station</h1>
+        <b>From NodeMCU</b>
+        <div class="row">
+            <div class="col-3">
+                <div class="row">
+                    <div class="col-4">
+                        <b>Temperature</b>
+                    </div>
+                    &nbsp
+                    <div class="col-8">
+                        <span id="lastTemp"></span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <b>Humidity</b>
+                    </div>
+                    &nbsp
+                    <div class="col-8">
+                        <span id="lastHum"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-4">
+                <canvas id="myChart" width="400" height="200">
+                </canvas>
+            </div>
+            <div class="col-4">
+                <canvas id="myChart2" width="400" height="200">
+                </canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-4">
+                <canvas id="myChart3" width="400" height="200">
+                </canvas>
+            </div>
+            <div class="col-4">
+                <canvas id="myChart4" width="400" height="200">
+                </canvas>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-4">
+
+                <button class="btn btn-primary" id="btnOn" onclick="turnOnLed()">On</button>
+                <button class="btn btn-primary" id="btnOff" onclick="turnOffLed()">Off</button>
+
+
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-2.2.4.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.0/dist/chart.min.js"></script>
+</body>
+<script>
+    
+    let get_json = () => {
+        let url = "http://192.168.2.36:5000/thingspeak";
+        fetch(url)
+            .then(response => response.json())
+            .then(json => {
+                console.log(json);
+                console.log(json.channel);
+                console.log(json.channel.field1);
+            });
+    }
+
+
+    let get_last = () => {
+        let url = "http://192.168.2.36:5000/nodemcu/last";
+        fetch(url)
+            .then(response => response.json())
+            .then(json => {
+                let id = json[0].id;
+                let message = json[0].message;
+                let sensor = $.parseJSON(message);
+
+                $("#lastHum").text(sensor.humidity.toFixed(2));
+                $("#lastTemp").text(sensor.temperature.toFixed(2));
+
+            });
+            
+    }
+
+    let showChart = () => {
+        var ctx = $("#myChart");
+        var xlabel = [];
+        var data1 = [];
+
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: xlabel,
+                datasets: [{
+                    label: "Temperature",
+                    data: data1
+                }]
+            }
+        });
+
+        // Function to update the chart with new data
+        let updateChart = () => {
+            fetch("http://192.168.2.36:5000/nodemcu/last")
+                .then(response => response.json())
+                .then(json => {
+                    // Process the JSON response and extract temperature data
+                    json.forEach(entry => {
+                        let message = JSON.parse(entry.message);
+                        xlabel.push(entry.id);
+                        data1.push(message.temperature);
+                    });
+
+                    // Keep only the last 7 data points for the chart
+                    xlabel = xlabel.slice(-7);
+                    data1 = data1.slice(-7);
+
+                    // Update the chart data and redraw
+                    myChart.data.labels = xlabel;
+                    myChart.data.datasets[0].data = data1;
+                    myChart.update();
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                });
+        };
+
+        // Update the chart every 5 seconds (adjust the interval as needed)
+        // setInterval(updateChart, 5000);
+    };
+
+var data2 = [];  
+var xlabel = []; 
+var myChart;     
+
+let showChartv2 = () => {
+    var ctx2 = $("#myChart2");
+
+    myChart = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: xlabel,
+            datasets: [{
+                label: "humidity",
+                data: data2
+            }]
+        }
+    });
+};
+
+let updateChart = () => {
+    fetch("http://192.168.2.36:5000/nodemcu/last")
+        .then(response => response.json())
+        .then(json => {
+            // Process the JSON response and extract Humidity data
+            json.forEach(entry => {
+                let message = JSON.parse(entry.message);
+                xlabel.push(entry.id);
+                data2.push(message.humidity);
+            });
+
+            // Keep only the last 7 data points for the chart
+            xlabel = xlabel.slice(-7);
+            data2 = data2.slice(-7);
+
+            // Update the chart data and redraw
+            myChart.data.labels = xlabel;
+            myChart.data.datasets[0].data = data2;
+            myChart.update();
+        })
+        .catch(error => {
+            console.error("Error fetching data:", error);
+        });
+};
+
+// Update the chart every 5 seconds (adjust the interval as needed)
+// setInterval(updateChart, 5000);
+
+let showThingspeak = () => {
+  let url = "http://192.168.2.36:5000/thingspeak";
+  
+  fetch(url)
+    .then((response) => response.json())
+    .then((json) => {
+      console.log(json);
+      console.log(json.channel);
+      console.log(json.channel.field1);
+
+      let plot_data = {
+        xlabel: [],
+        data: [],
+        label: json.channel.field1,
+      };
+
+      json.feeds.forEach((value) => {
+        // Assuming "created_at" is in ISO 8601 format
+        let time = new Date(value.created_at).toLocaleTimeString(); // Adjust format as needed
+        plot_data.xlabel.push(time);
+        plot_data.data.push(parseFloat(value.field1) || 0); // Convert to float or use 0 if not a number
+      });
+
+      // Display the Thingspeak chart
+      var myChart = new Chart($("#myChart3"), {
+        type: "line",
+        data: {
+          labels: plot_data.xlabel,
+          datasets: [
+            {
+              label: plot_data.label,
+              data: plot_data.data,
+            },
+          ],
+        },
+      });
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+    });
+};
+
+    let mqtt_publish = (topic, message) => {
+        const client = mqtt.connect("ws://192.168.2.36:1883");
+        client.on('connect', function () {
+            console.log('Connected to MQTT broker');
+            client.publish(topic, message);
+            console.log('Message published');
+            client.end();
+
+        });
+        client.on('error', function (error) {
+            console.log('Error: ' + error);
+
+        });
+    }
+    let turnOnLed = () => {
+        $.get("/nodemcu/led/on", function (data) {
+            console.log("LED turned on");
+        });
+    }
+
+    let turnOffLed = () => {
+        $.get("/nodemcu/led/off", function (data) {
+            console.log("LED turned off");
+        });
+    }
+
+    $(() => {
+        //$("#btnOn").click(() => {
+            // mqtt_publish("led", "on");
+        //});
+        //$("#btnOff").click(() => {
+            // mqtt_publish("led", "off");
+        // $("#btnOn").click(turnOnLed);
+        // $("#btnOff").click(turnOffLed);    
+        });
+        // get_last();
+        // get_json();  
+        showChart();
+        showChartv2();
+        showThingspeak();
+    //});
+</script>
+
+</html>
